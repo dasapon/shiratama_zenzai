@@ -136,7 +136,7 @@ static void init_responses(std::map<std::string, std::function<void(const std::v
 		}
 		if(color != state.turn())state.act(pass);
 		//探索
-		searcher.search(state, 10000000, 1000);
+		searcher.search(state, 10000000, 10000);
 		Intersection bestmove = searcher.bestmove(state);
 		if(bestmove != resign){
 			state.act(bestmove);
