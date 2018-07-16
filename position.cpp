@@ -83,7 +83,7 @@ BitBoard Position::update_liverty(Intersection i){
 	int liverty = update_liverty_sub((*this)[i], i, done, bb);
 	//liverty_cacheの更新
 	bb.for_each([&](Intersection i){
-		liverty_cache = liverty;
+		liverty_cache[i] = liverty;
 	});
 	return bb;
 }

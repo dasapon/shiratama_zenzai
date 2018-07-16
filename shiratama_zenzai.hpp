@@ -36,3 +36,4 @@ enum{
 inline Intersection intersection(int x, int y){
 	return x + y * BoardWidth;
 }
+extern std::string intersection2string(Intersection i);

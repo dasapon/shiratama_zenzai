@@ -16,7 +16,7 @@ static const sheena::Array<std::string, 4> black_str({
 static const sheena::Array<std::string, 4> white_str({
 	"w", "W", "white", "WHITE"
 });
-static std::string intersection2string(Intersection i){
+std::string intersection2string(Intersection i){
 	if(i == pass){
 		return "pass";
 	}
@@ -87,7 +87,10 @@ static void init_responses(std::map<std::string, std::function<void(const std::v
 	};
 	responses["komi"] = [&](const std::vector<std::string>& args){
 		if(args.size() < 2)error("few args");
-		else searcher.set_komi(std::stod(args[1]));
+		else {
+			searcher.set_komi(std::stod(args[1]));
+			send("");
+		}
 	};
 	responses["play"] = [&](const std::vector<std::string>& args){
 		if(args.size() < 3)error("few args");
@@ -123,7 +126,7 @@ static void init_responses(std::map<std::string, std::function<void(const std::v
 	};
 	responses["genmove"] = [&](const std::vector<std::string>& args){
 		//探索
-		searcher.search(state, 100000, 10000);
+		searcher.search(state, 10000000, 1000);
 		send(intersection2string(searcher.bestmove(state)));
 	};
 }
