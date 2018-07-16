@@ -165,11 +165,11 @@ void Position::make_move(Intersection i){
 				liverty_changed |= neighbor;
 			}
 		}
-		else{
+		else if(stones[neighbor] == Empty){
 			not_enemy++;
-			if(stones[neighbor] == turn){
-				liverty_changed |= neighbor;
-			}
+		}
+		else if(stones[neighbor] == turn){
+			liverty_changed |= neighbor;
 		}
 	}
 	//石を置く
@@ -221,18 +221,16 @@ int Position::generate_moves(MoveArray& moves)const{
 						point_break = false;
 					}
 				}
-				else{
-					if(stones[neighbor] != Sentinel)point_break = false;
-					if(stones[neighbor] == enemy){
-						//石を取る手
-						if(liverty_cache[neighbor] < 2){
-							valid = true;
-						}
-					}
-					else{
-						//空点が存在
+				else if(stones[neighbor] == enemy){
+					point_break = false;
+					//石を取る手
+					if(liverty_cache[neighbor] < 2){
 						valid = true;
 					}
+				}
+				else if(stones[neighbor] == Empty){
+					point_break = false;
+					valid = true;
 				}
 			}
 			if(valid && !point_break){

@@ -26,6 +26,7 @@ std::string intersection2string(Intersection i){
 	return x_char[i % BoardWidth] + std::to_string(i / BoardWidth);
 }
 static Intersection string2intersection(std::string str){
+	if(str == "pass" || str == "PASS")return pass;
 	int x;
 	for(x=0;x<x_char.size();x++){
 		if(str[0] == x_char[x] || str[0] == x_char_small[x]){
@@ -136,7 +137,7 @@ static void init_responses(std::map<std::string, std::function<void(const std::v
 		}
 		if(color != state.turn())state.act(pass);
 		//探索
-		searcher.search(state, 10000000, 10000);
+		searcher.search(state, 10000000, 27000);
 		Intersection bestmove = searcher.bestmove(state);
 		if(bestmove != resign){
 			state.act(bestmove);
