@@ -43,6 +43,9 @@ public:
 	uint64_t key()const{
 		return pos.get_key();
 	}
+	Stone turn()const{
+		return pos.turn_player();
+	}
 	void playout(sheena::Array<double, 2>&, size_t thread_id);
 	int get_actions(int&, sheena::Array<Intersection, 362>&, sheena::Array<float, 362>&, size_t thread_id)const;
 	bool is_move_legal(Stone turn, Intersection i){

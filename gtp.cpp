@@ -102,6 +102,7 @@ static void init_responses(std::map<std::string, std::function<void(const std::v
 					break;
 				}
 			}
+			if(color != state.turn())state.act(pass);
 			Intersection i = string2intersection(args[2]);
 			bool legal = state.is_move_legal(color, i);
 			if(legal){
@@ -125,9 +126,22 @@ static void init_responses(std::map<std::string, std::function<void(const std::v
 		std::cerr << std::endl;
 	};
 	responses["genmove"] = [&](const std::vector<std::string>& args){
+		//手番
+		Stone color = Black;
+		for(const auto& str : white_str){
+			if(args[1] == str){
+				color = White;
+				break;
+			}
+		}
+		if(color != state.turn())state.act(pass);
 		//探索
 		searcher.search(state, 10000000, 1000);
-		send(intersection2string(searcher.bestmove(state)));
+		Intersection bestmove = searcher.bestmove(state);
+		if(bestmove != resign){
+			state.act(bestmove);
+		}
+		send(intersection2string(bestmove));
 	};
 }
 void gtp(){
