@@ -10,25 +10,28 @@ class State{
 	sheena::Array<Intersection, 2> move_history;
 	Searcher* searcher;
 	int game_ply;
+	bool super_kou;
 	Intersection random_move(std::mt19937& mt)const;
 public:
-	State(Searcher& searcher, int board_size):pos(board_size), searcher(&searcher), game_ply(0){
+	State(Searcher& searcher, int board_size):pos(board_size), searcher(&searcher), game_ply(0), super_kou(false){
 		for(int i=0;i<16;i++){
 			key_history[i] = 0;
 		}
 		move_history[0] = move_history[1] = -1;
 	}
-	State(const State& state):pos(state.pos), key_history(state.key_history), move_history(state.move_history), searcher(state.searcher), game_ply(state.game_ply){}
+	State(const State& state):pos(state.pos), key_history(state.key_history), move_history(state.move_history), searcher(state.searcher), game_ply(state.game_ply), super_kou(state.super_kou){}
 	void operator=(const State& rhs){
 		pos = rhs.pos;
 		key_history = rhs.key_history;
 		move_history = rhs.move_history;
 		searcher = rhs.searcher;
 		game_ply = rhs.game_ply;
+		super_kou = rhs.super_kou;
 	}
 	void clear(){
 		pos.clear();
 		game_ply = 0;
+		super_kou = false;
 		for(int i=0;i<16;i++){
 			key_history[i] = 0;
 		}
@@ -37,6 +40,13 @@ public:
 	void act(Intersection i){
 		pos.make_move(i);
 		game_ply++;
+		//super kou判定
+		for(int i=0;i<key_history.size();i++){
+			if(key() == key_history[i]){
+				super_kou = true;
+				break;
+			}
+		}
 		key_history[game_ply % 16] = key();
 		move_history[game_ply & 1] = i;
 	}
@@ -74,6 +84,7 @@ public:
 		komix2 = komi * 2;
 	}
 	Intersection bestmove(const State& state){
+		std::cerr <<"select" << std::endl;std::cerr.flush();
 		MoveArray moves;
 		sheena::Array<double, 362>rewards;
 		sheena::Array<int, 362> counts;
@@ -81,6 +92,7 @@ public:
 		Intersection ret = resign;
 		int max_count = 0;
 		for(int i=0;i<n_moves;i++){
+			std::cerr << intersection2string(moves[i]) << "," << rewards[i] << "," << counts[i] << std::endl;
 			if(rewards[i] > -0.8){
 				if(max_count < counts[i]){
 					ret = moves[i];

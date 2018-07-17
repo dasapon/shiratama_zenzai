@@ -136,6 +136,7 @@ static void init_responses(std::map<std::string, std::function<void(const std::v
 			}
 		}
 		if(color != state.turn())state.act(pass);
+		std::cerr << "search start" << std::endl;
 		//探索
 		searcher.search(state, 10000000, 27000);
 		Intersection bestmove = searcher.bestmove(state);
@@ -149,6 +150,7 @@ void gtp(){
 	Searcher searcher;
 	searcher.resize_tt(256);
 	searcher.set_expansion_threshold(10);
+	//searcher.set_threads(4);
 	State state(searcher, 19);
 	std::map<std::string, std::function<void(const std::vector<std::string>& args)>> responses;
 	init_responses(responses, searcher, state);
