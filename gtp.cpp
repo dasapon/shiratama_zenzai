@@ -72,6 +72,7 @@ static void init_responses(std::map<std::string, std::function<void(const std::v
 	responses["boardsize"] = [&](const std::vector<std::string>& args){
 		if(args.size() < 2)error("few args");
 		else{
+			searcher.clear_tt();
 			int board_size = std::stoi(args[1]);
 			if(board_size >= 9 && board_size<=19){
 				state = State(searcher, board_size);
@@ -84,6 +85,7 @@ static void init_responses(std::map<std::string, std::function<void(const std::v
 	};
 	responses["clear_board"] = [&](const std::vector<std::string>& args){
 		state.clear();
+		searcher.clear_tt();
 		send("");
 	};
 	responses["komi"] = [&](const std::vector<std::string>& args){
@@ -158,7 +160,7 @@ void gtp(){
 	Searcher searcher;
 	searcher.resize_tt(256);
 	searcher.set_expansion_threshold(10);
-	searcher.set_threads(4);
+	searcher.set_threads(1);
 	State state(searcher, 19);
 	std::map<std::string, std::function<void(const std::vector<std::string>& args)>> responses;
 	init_responses(responses, searcher, state);

@@ -106,9 +106,6 @@ int Position::result_sub(Intersection i, BitBoard& done, Stone& color)const {
 }
 
 int Position::result(int komix2)const{
-	if(komix2 != 14){
-		std::cerr << "invalid" << std::endl;
-	}
 	int territory_diff = 0;
 	BitBoard counted_empties;
 	counted_empties.clear();
@@ -223,42 +220,41 @@ int Position::generate_moves(MoveArray& moves)const{
 	moves[ret++] = pass;
 	for(int y = 1; y <= board_size; y++){ for(int x = 1; x <= board_size; x++){
 		Intersection i = intersection(x, y);
-		if(stones[i] == Empty){
-			bool valid = false, point_break = true;
-			//合法手である条件
-			//コウを即座に取り返す手でない
-			//打った石の呼吸点が0に成らない
-			//自分の目を潰す手で無い(呼吸点2以上の味方の石)でないものが周辺に存在する
-			for(Intersection dir : dir4){
-				Intersection neighbor = i + dir;
-				//コウを即座に取り返す手
-				if(neighbor == kou){
-					valid = false;
-					break;
+		if(stones[i] != Empty)continue;
+		bool valid = false, point_break = true;
+		//合法手である条件
+		//コウを即座に取り返す手でない
+		//打った石の呼吸点が0に成らない
+		//自分の目を潰す手で無い(呼吸点2以上の味方の石)でないものが周辺に存在する
+		for(Intersection dir : dir4){
+			Intersection neighbor = i + dir;
+			//コウを即座に取り返す手
+			if(neighbor == kou){
+				valid = false;
+				break;
+			}
+			if(stones[neighbor] == turn){
+				if(liverty_cache[neighbor] != 1){
+					valid = true;
 				}
-				if(stones[neighbor] == turn){
-					if(liverty_cache[neighbor] != 1){
-						valid = true;
-					}
-					else{
-						point_break = false;
-					}
-				}
-				else if(stones[neighbor] == enemy){
+				else{
 					point_break = false;
-					//石を取る手
-					if(liverty_cache[neighbor] < 2){
-						valid = true;
-					}
 				}
-				else if(stones[neighbor] == Empty){
-					point_break = false;
+			}
+			else if(stones[neighbor] == enemy){
+				point_break = false;
+				//石を取る手
+				if(liverty_cache[neighbor] < 2){
 					valid = true;
 				}
 			}
-			if(valid && !point_break){
-				moves[ret++] = i;
+			else if(stones[neighbor] == Empty){
+				point_break = false;
+				valid = true;
 			}
+		}
+		if(valid && !point_break){
+			moves[ret++] = i;
 		}
 	}}
 	return ret;
