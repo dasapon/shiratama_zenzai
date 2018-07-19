@@ -1,4 +1,6 @@
 #include "position.hpp"
+#include "policy.hpp"
+#include "dir4pattern.hpp"
 
 static const sheena::Array<Intersection, 4> dir4({East, West, North, South});
 
@@ -214,14 +216,15 @@ void Position::make_move(Intersection i){
 	key ^= 1;
 }
 
-int Position::generate_moves(MoveArray& moves)const{
-	const Stone enemy = opponent(turn);
+int Position::generate_moves(MoveArray& moves, sheena::Array<float, 362>& policy_score)const{
 	int ret = 0;
-	moves[ret++] = pass;
+	moves[ret] = pass;
+	policy_score[ret++] = 0.01f;
 	for(int y = 1; y <= board_size; y++){ for(int x = 1; x <= board_size; x++){
 		Intersection i = intersection(x, y);
 		if(stones[i] != Empty)continue;
-		bool valid = false, point_break = true;
+		bool invalid = false;
+		int dir4pattern = 0;
 		//合法手である条件
 		//コウを即座に取り返す手でない
 		//打った石の呼吸点が0に成らない
@@ -230,32 +233,24 @@ int Position::generate_moves(MoveArray& moves)const{
 			Intersection neighbor = i + dir;
 			//コウを即座に取り返す手
 			if(neighbor == kou){
-				valid = false;
+				invalid = true;
 				break;
 			}
-			if(stones[neighbor] == turn){
-				if(liverty_cache[neighbor] != 1){
-					valid = true;
-				}
-				else{
-					point_break = false;
-				}
-			}
-			else if(stones[neighbor] == enemy){
-				point_break = false;
-				//石を取る手
-				if(liverty_cache[neighbor] < 2){
-					valid = true;
-				}
-			}
-			else if(stones[neighbor] == Empty){
-				point_break = false;
-				valid = true;
-			}
+			dir4pattern = update_pattern(turn, dir4pattern, static_cast<Stone>(stones[neighbor]), liverty_cache[neighbor]);
 		}
-		if(valid && !point_break){
-			moves[ret++] = i;
+		if(!invalid && is_legal.test(dir4pattern)){
+			moves[ret] = i;
+			policy_score[ret++] = policy(board_size, i, dir4pattern);
 		}
 	}}
+	return ret;
+}
+
+int Position::dir4index(Intersection i)const{
+	int ret = 0;
+	for(Intersection dir : dir4){
+		Intersection neighbor = i + dir;
+		ret = update_pattern(turn, ret, static_cast<Stone>(stones[neighbor]), liverty_cache[neighbor]);
+	}
 	return ret;
 }

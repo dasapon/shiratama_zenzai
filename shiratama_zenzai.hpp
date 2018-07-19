@@ -5,6 +5,9 @@
 #include <cstdint>
 #include <map>
 #include <iostream>
+#include <bitset>
+
+#include <omp.h>
 
 #include "sheena/sheena.hpp"
 
@@ -37,3 +40,14 @@ inline Intersection intersection(int x, int y){
 	return x + y * BoardWidth;
 }
 extern std::string intersection2string(Intersection i);
+extern Intersection string2intersection(std::string str);
+
+struct Record : public std::vector<Intersection>{
+	int result;
+};
+
+extern std::vector<Record> load_records(std::string filename);
+
+extern void store_records(std::string filename, const std::vector<Record>& records);
+
+extern void generate_records();

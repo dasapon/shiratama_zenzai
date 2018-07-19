@@ -25,7 +25,7 @@ std::string intersection2string(Intersection i){
 	}
 	return x_char[i % BoardWidth] + std::to_string(i / BoardWidth);
 }
-static Intersection string2intersection(std::string str){
+Intersection string2intersection(std::string str){
 	if(str == "pass" || str == "PASS")return pass;
 	int x;
 	for(x=0;x<x_char.size();x++){
@@ -138,29 +138,23 @@ static void init_responses(std::map<std::string, std::function<void(const std::v
 			}
 		}
 		if(color != state.turn())state.act(pass);
+		sheena::Stopwatch stopwatch;
 		std::cerr << "search start" << std::endl;
 		//探索
-		searcher.search(state, 10000000, 27000);
+		searcher.search(state, 10000000, 500);
+		std::cerr << "time " << stopwatch.msec() <<"[msec]" << std::endl;
 		Intersection bestmove = searcher.bestmove(state);
 		if(bestmove != resign){
 			state.act(bestmove);
 		}
 		send(intersection2string(bestmove));
 	};
-	responses["bench"] = [&](const std::vector<std::string>& args){
-		sheena::Stopwatch stopwatch;
-		std::cerr << "search start" << std::endl;
-		//探索
-		searcher.search(state, 10000000, 100000);
-		Intersection bestmove = searcher.bestmove(state);
-		std::cerr << "time " << stopwatch.msec() <<"[msec]" << std::endl;
-	};
 }
 void gtp(){
 	Searcher searcher;
 	searcher.resize_tt(256);
 	searcher.set_expansion_threshold(10);
-	searcher.set_threads(1);
+	searcher.set_threads(4);
 	State state(searcher, 19);
 	std::map<std::string, std::function<void(const std::vector<std::string>& args)>> responses;
 	init_responses(responses, searcher, state);

@@ -1,14 +1,27 @@
 #include "state.hpp"
 
+static int binary_search(int start, int end, float f, sheena::Array<float, 362>& policy){
+	if(end - start == 1)return start;
+	int mid = (start + end) / 2;
+	if(f < policy[mid])return binary_search(start, mid, f, policy);
+	else return binary_search(mid, end, f, policy);
+}
+
 Intersection State::random_move(std::mt19937& mt)const{
 	MoveArray moves;
+	sheena::Array<float, 362> policy;
 	//合法手生成
-	int n_moves = pos.generate_moves(moves);
+	int n_moves = pos.generate_moves(moves, policy);
 	//他の合法手があればパスは選択しない
 	//パス以外の合法手しか無いならばパスをする
 	if(n_moves == 1)return pass;
-	std::uniform_int_distribution<int> dist(1, n_moves - 1);
-	return moves[dist(mt)];
+	for(int i=2;i<n_moves;i++){
+		policy[i] += policy[i - 1];
+	}
+	std::uniform_real_distribution<float> dist(0, policy[n_moves - 1]);
+	float p = dist(mt);
+	//2分探索
+	return moves[binary_search(1, n_moves, p, policy)];
 }
 
 bool State::terminate(sheena::Array<double, 2>& reward)const{
@@ -47,7 +60,15 @@ int State::get_actions(int& n_moves, MoveArray& moves, sheena::Array<float, 362>
 		return pos.turn_player() - 1;
 	}
 	//非合法手
-	n_moves = pos.generate_moves(moves);
-	for(int i=0;i<n_moves;i++)probabilities[i] = 1.0 / n_moves;
+	n_moves = pos.generate_moves(moves, probabilities);
+	float sum = 0;
+	for(int i=0;i<n_moves;i++)sum += probabilities[i];
+	for(int i=0;i<n_moves;i++)probabilities[i] /= sum;
 	return pos.turn_player() - 1;
+}
+void Searcher::set_random(){
+	std::random_device rd;
+	for(auto& rand : mt){
+		rand.seed(rd());
+	}
 }

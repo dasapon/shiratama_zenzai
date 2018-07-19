@@ -39,13 +39,12 @@ public:
 		move_history[0] = move_history[1] = -1;
 	}
 	void act(Intersection i){
-		assert(is_move_legal(turn(), i));
 		pos.make_move(i);
 		game_ply++;
 		move_history[game_ply % 2] = i;
 		//super kou判定
 		if(super_kou == Empty && i != pass){
-			for(int i=0;i<key_history.size();i++){
+			for(int i=game_ply % 2;i<key_history.size();i+=2){
 				if(key() == key_history[i]){
 					super_kou = turn();
 					break;
@@ -63,13 +62,14 @@ public:
 	void playout(sheena::Array<double, 2>&, size_t thread_id);
 	int get_actions(int&, sheena::Array<Intersection, 362>&, sheena::Array<float, 362>&, size_t thread_id)const;
 	bool is_move_legal(Stone turn, Intersection i){
-		if(turn != pos.turn_player())return false;
+		return true;//ひとまず, GUIから送られる手は全て合法手であるとしておく。
+		/*if(turn != pos.turn_player())return false;
 		MoveArray moves;
 		int n = pos.generate_moves(moves);
 		for(int i=0;i<n;i++){
 			if(moves[i] == i)return true;
 		}
-		return false;
+		return false;*/
 	}
 };
 constexpr size_t max_threads = 16;
@@ -87,6 +87,7 @@ public:
 	void set_komi(double komi){
 		komix2 = komi * 2;
 	}
+	void set_random();
 	Intersection bestmove(const State& state){
 		std::cerr <<"select" << std::endl;std::cerr.flush();
 		MoveArray moves;
@@ -105,5 +106,22 @@ public:
 			}
 		}
 		return ret;
+	}
+	Intersection select(const State& state){
+		MoveArray moves;
+		sheena::Array<double, 362>rewards;
+		sheena::Array<int, 362> counts;
+		int n_moves = search_result(state, moves, rewards, counts);
+		int count_sum = 0;
+		for(int i=0;i<n_moves;i++){
+			count_sum += counts[i];
+		}
+		std::uniform_int_distribution<int> dist(0, count_sum - 1);
+		int r = dist(mt[0]);
+		for(int i=0;i<n_moves;i++){
+			r -= counts[i];
+			if(r < 0)return moves[i];
+		}
+		return pass;
 	}
 };

@@ -37,5 +37,6 @@ public:
 	int result(int komix2)const;
 	void make_move(Intersection i);
 	void clear();
-	int generate_moves(MoveArray& moves)const;
+	int generate_moves(MoveArray& moves, sheena::Array<float, 362>& policy_score)const;
+	int dir4index(Intersection i)const;
 };
