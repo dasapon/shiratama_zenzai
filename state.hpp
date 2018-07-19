@@ -10,10 +10,10 @@ class State{
 	sheena::Array<Intersection, 2> move_history;
 	Searcher* searcher;
 	int game_ply;
-	bool super_kou;
+	Stone super_kou;
 	Intersection random_move(std::mt19937& mt)const;
 public:
-	State(Searcher& searcher, int board_size):pos(board_size), searcher(&searcher), game_ply(0), super_kou(false){
+	State(Searcher& searcher, int board_size):pos(board_size), searcher(&searcher), game_ply(0), super_kou(Empty){
 		for(int i=0;i<16;i++){
 			key_history[i] = 0;
 		}
@@ -28,27 +28,31 @@ public:
 		game_ply = rhs.game_ply;
 		super_kou = rhs.super_kou;
 	}
+	bool terminate(sheena::Array<double, 2>& reward)const;
 	void clear(){
 		pos.clear();
 		game_ply = 0;
-		super_kou = false;
+		super_kou = Empty;
 		for(int i=0;i<16;i++){
 			key_history[i] = 0;
 		}
 		move_history[0] = move_history[1] = -1;
 	}
 	void act(Intersection i){
+		assert(is_move_legal(turn(), i));
 		pos.make_move(i);
 		game_ply++;
+		move_history[game_ply % 2] = i;
 		//super kou判定
-		for(int i=0;i<key_history.size();i++){
-			if(key() == key_history[i]){
-				super_kou = true;
-				break;
+		if(super_kou != Empty && i != pass){
+			for(int i=0;i<key_history.size();i++){
+				if(key() == key_history[i]){
+					super_kou = turn();
+					break;
+				}
 			}
 		}
 		key_history[game_ply % 16] = key();
-		move_history[game_ply & 1] = i;
 	}
 	uint64_t key()const{
 		return pos.get_key();

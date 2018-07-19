@@ -1,7 +1,7 @@
 SOURCES := $(shell ls *.cpp)
 HEADERS := $(shell ls *.hpp)
 LIBRARIES := -lpthread -lomp
-OPTIONS := -std=c++14 -Wall -DNO_SIMD256 -O3 -march=native
+OPTIONS := -std=c++14 -Wall -DNDEBUG -DNO_SIMD256 -O3 -march=native
 BIN_DIR := ../bin
 CC := clang++
 EXE := shiratama_zenzai

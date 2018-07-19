@@ -20,6 +20,7 @@ class Position{
 	int remove_string(Stone color, Intersection i, BitBoard& liverty_changed);
 	int update_liverty_sub(Stone color, Intersection i, BitBoard& done, BitBoard& string)const;
 	BitBoard update_liverty(Intersection i);
+	int result_sub(Intersection i, BitBoard& done, Stone& color)const;
 public:
 	Position(int board_size);
 	Position(const Position& pos);

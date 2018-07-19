@@ -150,7 +150,7 @@ void gtp(){
 	Searcher searcher;
 	searcher.resize_tt(256);
 	searcher.set_expansion_threshold(10);
-	//searcher.set_threads(4);
+	searcher.set_threads(4);
 	State state(searcher, 19);
 	std::map<std::string, std::function<void(const std::vector<std::string>& args)>> responses;
 	init_responses(responses, searcher, state);

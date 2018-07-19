@@ -88,25 +88,47 @@ BitBoard Position::update_liverty(Intersection i){
 	return bb;
 }
 
+//空点がどちらの地かを判定
+int Position::result_sub(Intersection i, BitBoard& done, Stone& color)const {
+	assert(stones[i] == Empty);
+	done |= i;
+	int ret = 1;
+	for(Intersection dir : dir4){
+		color = static_cast<Stone>(color | stones[i + dir]);
+		if(stones[i + dir] == Empty){
+			if(!done[i + dir]){
+				ret += result_sub(i + dir, done, color);
+			}
+		}
+	}
+	return ret;
+}
+
 int Position::result(int komix2)const{
+	if(komix2 != 14){
+		std::cerr << "invalid" << std::endl;
+	}
 	int territory_diff = 0;
+	BitBoard counted_empties;
+	counted_empties.clear();
 	for(int y = 1; y<=board_size;y++){
 		for(int x = 1; x<= board_size;x++){
 			Intersection i = intersection(x, y);
 			Stone stone = (*this)[i];
 			switch(stone){
 			case Empty:
-				{
-					sheena::VInt<StoneDim> surround;
-					surround.clear();
-					for(Intersection dir : dir4){
-						surround[(*this)[i + dir]] += 1;
-					}
-					if(surround[Black]){
-						if(surround[White] == 0)territory_diff++;
-					}
-					else if(surround[White]){
-						territory_diff--;
+				if(!counted_empties[i]){
+					Stone surround = Empty;
+					int n = result_sub(i, counted_empties, surround);
+					switch(surround){
+					case Black:
+						territory_diff += n;
+						break;
+					case White:
+						territory_diff -= n;
+						break;
+					default:
+						break;
 					}
 				}
 				break;
