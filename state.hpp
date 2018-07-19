@@ -44,7 +44,7 @@ public:
 		game_ply++;
 		move_history[game_ply % 2] = i;
 		//super kou判定
-		if(super_kou != Empty && i != pass){
+		if(super_kou == Empty && i != pass){
 			for(int i=0;i<key_history.size();i++){
 				if(key() == key_history[i]){
 					super_kou = turn();
