@@ -145,6 +145,14 @@ static void init_responses(std::map<std::string, std::function<void(const std::v
 		}
 		send(intersection2string(bestmove));
 	};
+	responses["bench"] = [&](const std::vector<std::string>& args){
+		sheena::Stopwatch stopwatch;
+		std::cerr << "search start" << std::endl;
+		//探索
+		searcher.search(state, 10000000, 100000);
+		Intersection bestmove = searcher.bestmove(state);
+		std::cerr << "time " << stopwatch.msec() <<"[msec]" << std::endl;
+	};
 }
 void gtp(){
 	Searcher searcher;
