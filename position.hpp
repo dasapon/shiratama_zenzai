@@ -25,7 +25,7 @@ public:
 	Position(int board_size);
 	Position(const Position& pos);
 	void operator=(const Position& rhs);
-	uint64_t get_key()const{return key;}
+	uint64_t get_key()const{return key ^ hash_seed[kou][Empty];}
 	int get_board_size()const{return board_size;}
 	Stone turn_player()const{return turn;}
 	Stone operator[](Intersection i)const{

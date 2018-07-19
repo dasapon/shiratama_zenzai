@@ -7,6 +7,7 @@ sheena::Array2d<uint64_t, 441, 4> Position::hash_seed;
 void Position::init_hash_seed(){
 	std::mt19937_64 mt(0);
 	for(int i=0;i<hash_seed.size();i++){
+		hash_seed[i][Empty] = mt() & ~1ULL;//コウ
 		hash_seed[i][Black] = mt() & ~1ULL;
 		hash_seed[i][White] = mt() & ~1ULL;
 	}
