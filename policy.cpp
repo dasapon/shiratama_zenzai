@@ -42,7 +42,7 @@ void learn_policy(const std::vector<Record>& records){
 	clear_policy();
 	PolicyWeight denom;
 	PolicyWeight numerator;
-	for(int epoch = 0; epoch < 4; epoch++){
+	for(int epoch = 0; epoch < 8; epoch++){
 		for(int i=0;i<denom.size();i++){
 			for(int j=0;j<denom[i].size();j++){
 				numerator[i][j] = 1;
@@ -73,7 +73,7 @@ void learn_policy(const std::vector<Record>& records){
 					numerator[edge_dist[record[ply]]][pos.dir4index(record[ply])] += 1;
 					//分母の更新
 					for(int i=1;i<n_moves;i++){
-						denom[edge_dist[moves[i]]][pos.dir4index(moves[i])] += sum;
+						denom[edge_dist[moves[i]]][pos.dir4index(moves[i])] += 1.0 / sum;
 					}
 				}
 				//1手進める
@@ -89,4 +89,7 @@ void learn_policy(const std::vector<Record>& records){
 		//損失の表示
 		std::cout << "loss " << loss / cnt << std::endl;
 	}
+	//パラメータ保存
+	FILE* fp = fopen("policy.bin", "wb");
+	fwrite(&policy_weight, sizeof(PolicyWeight), 1, fp);
 }

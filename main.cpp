@@ -11,12 +11,13 @@ int main(int argc, char* argv[]){
 	init_dir4_table();
 	if(argc >= 2){
 		if(std::string(argv[1]) == "policy"){
-			std::vector<Record> records = load_records("selfplay.go");
+			std::vector<Record> records = load_records("selfplay.txt");
 			learn_policy(records);
 		}
 		else if(std::string(argv[1]) == "selfplay"){
 			generate_records();
 		}
+		return 0;
 	}
 	gtp();
 	return 0;

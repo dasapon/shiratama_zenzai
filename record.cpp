@@ -22,6 +22,7 @@ void store_records(std::string filename, const std::vector<Record>& records){
 		for(Intersection i : record){
 			out << " " << intersection2string(i);
 		}
+		out << std::endl;
 	}
 	out.close();
 }
