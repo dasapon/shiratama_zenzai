@@ -8,11 +8,26 @@ void generate_records(){
 	std::mutex mtx;
 	for(int i=0;i<selfplay_threads;i++){
 		searcher[i].set_random();
+		searcher[i].set_expansion_threshold(20);
+		searcher[i].set_komi(7);
 	}
+	Searcher book;
+	book.set_expansion_threshold(20);
+	{
+		State book_state(book, 9);
+		book.resize_tt(1024 * 12);
+		book.set_virtual_loss(5, -1);
+		book.set_komi(7);
+		book.set_threads(selfplay_threads);
+		book.search(book_state, 1800 * 1000, 7200 * 1000 * 3);
+		book.bestmove(book_state);
+	}
+	
 	//棋譜生成
 	omp_set_num_threads(selfplay_threads);
+	sheena::Stopwatch stopwatch;
 #pragma omp parallel for schedule(dynamic)
-	for(int i=0;i<6000;i++){
+	for(int i=0;i<7200;i++){
 		size_t thread_id = omp_get_thread_num();
 		Record record;
 		record.result = 0;
@@ -25,13 +40,17 @@ void generate_records(){
 				break;
 			}
 			//1手打つ
-			searcher[thread_id].search(state, 1000, 800);
-			Intersection move = searcher[thread_id].select(state);
+			Intersection move = book.select(state, 1000);
+			if(move == resign){
+				searcher[thread_id].search(state, 1000, 1000);
+				move = searcher[thread_id].select(state, 0);
+			}
 			state.act(move);
 			record.push_back(move);
 		}
 		std::lock_guard<std::mutex> lk(mtx);
 		records.push_back(record);
+		if(thread_id == 0)std::cout << records.size() << ", " << stopwatch.sec() << "[sec]" << std::endl;
 	}
 	store_records("selfplay.txt",records);
 }

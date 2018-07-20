@@ -36,6 +36,14 @@ enum{
 	East = 1,
 };
 
+enum{
+	SW = South + West,
+	SE = South + East,
+	NW = North + West,
+	NE = North + East,
+};
+constexpr int diag4dim = 3 * 3 * 3 * 3;
+
 inline Intersection intersection(int x, int y){
 	return x + y * BoardWidth;
 }

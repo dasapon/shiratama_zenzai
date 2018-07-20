@@ -3,6 +3,7 @@
 #include "dir4pattern.hpp"
 
 static const sheena::Array<Intersection, 4> dir4({East, West, North, South});
+static const sheena::Array<Intersection, 4> diag4({SE, SW, NE, NW});
 
 sheena::Array2d<uint64_t, BoardWidth * BoardWidth, 4> Position::hash_seed;
 
@@ -15,7 +16,7 @@ void Position::init_hash_seed(){
 	}
 }
 
-Position::Position(int board_size): stones(Sentinel), key(0), board_size(board_size), kou(0), turn(Black){
+Position::Position(int board_size): stones(Sentinel), key(0), board_size(board_size), kou(0), turn(Black), n_stone(0){
 	liverty_cache.clear();
 	for(int y = 1; y<=board_size;y++){
 		for(int x = 1; x<= board_size;x++){
@@ -34,16 +35,19 @@ void Position::operator=(const Position& rhs){
 	board_size = rhs.board_size;
 	kou = rhs.kou;
 	turn = rhs.turn;
+	n_stone = rhs.n_stone;
 	liverty_cache = rhs.liverty_cache;
 }
 
 void Position::put(Stone color, Intersection i){
 	stones[i] = color;
 	key ^= hash_seed[i][color];
+	n_stone++;
 }
 void Position::remove(Stone color, Intersection i){
 	stones[i] = Empty;
 	key ^= hash_seed[i][color];
+	n_stone--;
 }
 int Position::remove_string(Stone color, Intersection i, BitBoard& liverty_changed){
 	assert(stones[i] == color);
@@ -241,7 +245,7 @@ int Position::generate_moves(MoveArray& moves, sheena::Array<float, 362>& policy
 		}
 		if(!invalid && is_legal.test(dir4pattern)){
 			moves[ret] = i;
-			policy_score[ret++] = policy(board_size, i, dir4pattern);
+			policy_score[ret++] = pattern_policy(board_size, i, diag4index(i), dir4pattern);
 		}
 	}}
 	return ret;
@@ -252,6 +256,27 @@ int Position::dir4index(Intersection i)const{
 	for(Intersection dir : dir4){
 		Intersection neighbor = i + dir;
 		ret = update_pattern(turn, ret, static_cast<Stone>(stones[neighbor]), liverty_cache[neighbor]);
+	}
+	return ret;
+}
+
+int Position::diag4index(Intersection i)const{
+	int ret = 0;
+	for(Intersection dir : diag4){
+		ret *= 3;
+		Intersection neighbor = i + dir;
+		switch(stones[neighbor]){
+		case Black:
+		case White:
+			if(turn == stones[neighbor]){
+				ret += 1;
+			}
+			else{
+				ret += 2;
+			}
+		default:
+			break;
+		}
 	}
 	return ret;
 }

@@ -1,4 +1,5 @@
 #include "state.hpp"
+#include "policy.hpp"
 
 static int binary_search(int start, int end, float f, sheena::Array<float, 362>& policy){
 	if(end - start == 1)return start;
@@ -15,8 +16,18 @@ Intersection State::random_move(std::mt19937& mt)const{
 	//他の合法手があればパスは選択しない
 	//パス以外の合法手しか無いならばパスをする
 	if(n_moves == 1)return pass;
-	for(int i=2;i<n_moves;i++){
-		policy[i] += policy[i - 1];
+	Intersection lastmove = move_history[game_ply % 2];
+	if(lastmove > 0){
+		policy[1] *= relation_policy(lastmove, moves[1]);
+		for(int i=2;i<n_moves;i++){
+			policy[i] *= relation_policy(lastmove, moves[i]);
+			policy[i] += policy[i - 1];
+		}
+	}
+	else{
+		for(int i=2;i<n_moves;i++){
+			policy[i] += policy[i - 1];
+		}
 	}
 	std::uniform_real_distribution<float> dist(0, policy[n_moves - 1]);
 	float p = dist(mt);
@@ -55,7 +66,26 @@ int State::get_actions(int& n_moves, MoveArray& moves, sheena::Array<float, 362>
 	//合法手生成
 	n_moves = pos.generate_moves(moves, probabilities);
 	float sum = 0;
-	for(int i=0;i<n_moves;i++)sum += probabilities[i];
+	assert(moves[0] == pass);
+	Intersection lastmove = move_history[game_ply % 2];
+	if(lastmove > 0){
+		for(int i=1;i<n_moves;i++){
+			probabilities[i] *= relation_policy(lastmove, probabilities[i]);
+			sum += probabilities[i];
+		}
+	}else{
+		for(int i=1;i<n_moves;i++){
+			sum += probabilities[i];
+		}
+	}
+	//進行度が0.5未満ならパスを非合法手扱いする
+	if(pos.progress() < 0.5){
+		probabilities[0] = probabilities[--n_moves];
+		moves[0] = moves[n_moves];
+	}
+	else{
+		sum += probabilities[0];
+	}
 	for(int i=0;i<n_moves;i++)probabilities[i] /= sum;
 	return pos.turn_player() - 1;
 }

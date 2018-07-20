@@ -108,7 +108,7 @@ public:
 		if(max_reward <= -0.8)ret = resign;
 		return ret;
 	}
-	Intersection select(const State& state){
+	Intersection select(const State& state, int threshold){
 		MoveArray moves;
 		sheena::Array<double, 362>rewards;
 		sheena::Array<int, 362> counts;
@@ -117,6 +117,7 @@ public:
 		for(int i=0;i<n_moves;i++){
 			count_sum += counts[i];
 		}
+		if(count_sum <= threshold)return resign;
 		std::uniform_int_distribution<int> dist(0, count_sum - 1);
 		int r = dist(mt[0]);
 		for(int i=0;i<n_moves;i++){

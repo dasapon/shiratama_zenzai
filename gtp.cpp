@@ -142,7 +142,7 @@ static void init_responses(std::map<std::string, std::function<void(const std::v
 		sheena::Stopwatch stopwatch;
 		std::cerr << "search start" << std::endl;
 		//探索
-		searcher.search(state, 10000000, 50000);
+		searcher.search(state, 10000000, 30000);
 		std::cerr << "time " << stopwatch.msec() <<"[msec]" << std::endl;
 		Intersection bestmove = searcher.bestmove(state);
 		if(bestmove != resign){
@@ -157,6 +157,7 @@ void gtp(){
 	searcher.resize_tt(256);
 	searcher.set_expansion_threshold(10);
 	searcher.set_threads(1);
+	searcher.set_virtual_loss(5, -1);
 	State state(searcher, 19);
 	std::map<std::string, std::function<void(const std::vector<std::string>& args)>> responses;
 	init_responses(responses, searcher, state);

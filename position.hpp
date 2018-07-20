@@ -15,6 +15,7 @@ class Position{
 	int board_size;
 	Intersection kou;
 	Stone turn;
+	int n_stone;
 	void put(Stone color, Intersection i);
 	void remove(Stone color, Intersection i);
 	int remove_string(Stone color, Intersection i, BitBoard& liverty_changed);
@@ -39,4 +40,8 @@ public:
 	void clear();
 	int generate_moves(MoveArray& moves, sheena::Array<float, 362>& policy_score)const;
 	int dir4index(Intersection i)const;
+	int diag4index(Intersection i)const;
+	float progress()const{
+		return float(n_stone) / board_size * board_size;
+	}
 };
