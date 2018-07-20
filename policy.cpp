@@ -71,12 +71,36 @@ float relation_policy(Intersection lastmove, Intersection move){
 	return policy_weight.relation[relation_table[lastmove][move]];
 }
 
+static Intersection symmetry(int board_size, Intersection i, int sym_idx){
+	if(sym_idx == 0 || i == pass || i == resign)return i;
+	int x = i % BoardWidth;
+	int y = i / BoardWidth;
+	if(sym_idx >= 4){
+		//左右反転
+		return symmetry(board_size, intersection(board_size - x + 1, y), sym_idx - 4);
+	}
+	//回転
+	return symmetry(board_size, intersection(y, board_size - x + 1), sym_idx - 1);
+}
 
-void learn_policy(const std::vector<Record>& records){
+void learn_policy(const std::vector<Record>& records_base){
+	for(int i=0;i<8;i++)std::cout << intersection2string(symmetry(9, string2intersection("C4"), i)) << std::endl;
+	//対称性を用いた棋譜の水増し
+	std::vector<Record> records;
+	for(const Record& record : records_base){
+		sheena::Array<Record, 8> recordx8;
+		for(int i=0;i<8;i++){
+			recordx8[i].result = record.result;
+			for(int ply = 0; ply < record.size();ply++){
+				recordx8[i].push_back(symmetry(9, record[ply], i));
+			}
+			records.push_back(recordx8[i]);
+		}
+	}
 	clear_policy();
 	PolicyWeight denom;
 	PolicyWeight numerator;
-	for(int epoch = 0; epoch < 16; epoch++){
+	for(int epoch = 0; epoch < 32; epoch++){
 		for(int i=0;i<diag4dim;i++){
 			for(int j=0;j<dir4dim;j++){
 				for(int k=0;k < 2;k++){
@@ -87,7 +111,7 @@ void learn_policy(const std::vector<Record>& records){
 		}
 		for(int i=0;i<8;i++){
 			numerator.relation[i] = 1;
-				denom.relation[i] = 2.0 / (1 + policy_weight.relation[i]);
+			denom.relation[i] = 2.0 / (1 + policy_weight.relation[i]);
 		}
 		double loss = 0;
 		int cnt = 0;
@@ -116,8 +140,11 @@ void learn_policy(const std::vector<Record>& records){
 					if(lastmove != pass)numerator.relation[relation_table[lastmove][record[ply]]] += 1;
 					//分母の更新
 					for(int i=1;i<n_moves;i++){
-						denom.pattern[pos.diag4index(moves[i])][pos.dir4index(moves[i])][is_edge9[moves[i]]] += 1.0 / sum;
-						if(lastmove != pass)denom.relation[relation_table[lastmove][moves[i]]] += 1.0 / sum;
+						int diag4 = pos.diag4index(moves[i]), dir4 = pos.dir4index(moves[i]), edge = is_edge9[moves[i]];
+						float rel_weight = 1;
+						if(lastmove != pass)rel_weight = policy_weight.relation[relation_table[lastmove][moves[i]]];
+						denom.pattern[diag4][dir4][edge] += rel_weight / sum;
+						if(lastmove != pass)denom.relation[relation_table[lastmove][moves[i]]] += policy_weight.pattern[diag4][dir4][edge] / sum;
 					}
 				}
 				//1手進める
@@ -125,7 +152,7 @@ void learn_policy(const std::vector<Record>& records){
 			}
 		}
 		//パラメータの更新
-		if(epoch % 2 == 1){
+		if(epoch % 2 != 0){
 			for(int i=0;i<diag4dim;i++){
 				for(int j=0;j<dir4dim;j++){
 					for(int k=0;k<2;k++)policy_weight.pattern[i][j][k] = numerator.pattern[i][j][k] / denom.pattern[i][j][k];

@@ -144,7 +144,7 @@ static void init_responses(std::map<std::string, std::function<void(const std::v
 		//探索
 		searcher.search(state, 10000000, 30000);
 		std::cerr << "time " << stopwatch.msec() <<"[msec]" << std::endl;
-		Intersection bestmove = searcher.bestmove(state);
+		Intersection bestmove = searcher.bestmove<true>(state);
 		if(bestmove != resign){
 			state.act(bestmove);
 		}

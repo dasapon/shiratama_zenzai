@@ -42,6 +42,6 @@ public:
 	int dir4index(Intersection i)const;
 	int diag4index(Intersection i)const;
 	float progress()const{
-		return float(n_stone) / board_size * board_size;
+		return float(n_stone) / (board_size * board_size);
 	}
 };

@@ -88,8 +88,8 @@ public:
 		komix2 = komi * 2;
 	}
 	void set_random();
+	template<bool print>
 	Intersection bestmove(const State& state){
-		std::cerr <<"select" << std::endl;std::cerr.flush();
 		MoveArray moves;
 		sheena::Array<double, 362>rewards;
 		sheena::Array<int, 362> counts;
@@ -98,7 +98,7 @@ public:
 		int max_count = 0;
 		double max_reward = -2;
 		for(int i=0;i<n_moves;i++){
-			std::cerr << intersection2string(moves[i]) << "," << rewards[i] << "," << counts[i] << std::endl;
+			if(print)std::cerr << intersection2string(moves[i]) << "," << rewards[i] << "," << counts[i] << std::endl;
 			max_reward = std::max(max_reward, rewards[i]);
 			if(max_count < counts[i]){
 				ret = moves[i];

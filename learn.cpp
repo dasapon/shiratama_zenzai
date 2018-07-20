@@ -19,15 +19,15 @@ void generate_records(){
 		book.set_virtual_loss(5, -1);
 		book.set_komi(7);
 		book.set_threads(selfplay_threads);
-		book.search(book_state, 1800 * 1000, 7200 * 1000 * 3);
-		book.bestmove(book_state);
+		book.search(book_state, 1800 * 1000, 10000 * 500 * 4);
+		book.bestmove<true>(book_state);
 	}
 	
 	//棋譜生成
 	omp_set_num_threads(selfplay_threads);
 	sheena::Stopwatch stopwatch;
 #pragma omp parallel for schedule(dynamic)
-	for(int i=0;i<7200;i++){
+	for(int i=0;i<10000;i++){
 		size_t thread_id = omp_get_thread_num();
 		Record record;
 		record.result = 0;
@@ -40,11 +40,12 @@ void generate_records(){
 				break;
 			}
 			//1手打つ
-			Intersection move = book.select(state, 1000);
+			Intersection move = book.select(state, 500);
 			if(move == resign){
-				searcher[thread_id].search(state, 1000, 1000);
-				move = searcher[thread_id].select(state, 0);
+				searcher[thread_id].search(state, 1000, 500);
+				move = searcher[thread_id].bestmove<false>(state);
 			}
+			if(move == resign)break;
 			state.act(move);
 			record.push_back(move);
 		}
