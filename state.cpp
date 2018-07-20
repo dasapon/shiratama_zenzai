@@ -1,38 +1,20 @@
 #include "state.hpp"
-#include "policy.hpp"
-
-static int binary_search(int start, int end, float f, sheena::Array<float, 362>& policy){
-	if(end - start == 1)return start;
-	int mid = (start + end) / 2;
-	if(f < policy[mid])return binary_search(start, mid, f, policy);
-	else return binary_search(mid, end, f, policy);
-}
+#include "dir4pattern.hpp"
 
 Intersection State::random_move(std::mt19937& mt)const{
 	MoveArray moves;
-	sheena::Array<float, 362> policy;
 	//合法手生成
-	int n_moves = pos.generate_moves(moves, policy);
+	int n_moves = pos.generate_moves_fast(moves);
 	//他の合法手があればパスは選択しない
 	//パス以外の合法手しか無いならばパスをする
-	if(n_moves == 1)return pass;
-	Intersection lastmove = move_history[game_ply % 2];
-	if(lastmove > 0){
-		policy[1] *= relation_policy(lastmove, moves[1]);
-		for(int i=2;i<n_moves;i++){
-			policy[i] *= relation_policy(lastmove, moves[i]);
-			policy[i] += policy[i - 1];
-		}
+	while(n_moves){
+		std::uniform_int_distribution<int> dist(0, n_moves - 1);
+		int idx = dist(mt);
+		Intersection move = moves[idx];
+		if(pos.is_move_legal(move))return move;
+		else moves[idx] = moves[--n_moves];
 	}
-	else{
-		for(int i=2;i<n_moves;i++){
-			policy[i] += policy[i - 1];
-		}
-	}
-	std::uniform_real_distribution<float> dist(0, policy[n_moves - 1]);
-	float p = dist(mt);
-	//2分探索
-	return moves[binary_search(1, n_moves, p, policy)];
+	return pass;
 }
 
 bool State::terminate(sheena::Array<double, 2>& reward)const{
@@ -64,29 +46,13 @@ void State::playout(sheena::Array<double, 2>& result, size_t thread_id){
 
 int State::get_actions(int& n_moves, MoveArray& moves, sheena::Array<float, 362>& probabilities, size_t thread_id)const{
 	//合法手生成
-	n_moves = pos.generate_moves(moves, probabilities);
-	float sum = 0;
-	assert(moves[0] == pass);
-	Intersection lastmove = move_history[game_ply % 2];
-	if(lastmove > 0){
-		for(int i=1;i<n_moves;i++){
-			probabilities[i] *= relation_policy(lastmove, probabilities[i]);
-			sum += probabilities[i];
-		}
-	}else{
-		for(int i=1;i<n_moves;i++){
-			sum += probabilities[i];
-		}
+	n_moves = pos.generate_moves(moves);
+	//進行度が0.5以上ならパスを追加
+	if(pos.progress() >= 0.5){
+		moves[n_moves++] = pass;
 	}
-	//進行度が0.5未満ならパスを非合法手扱いする
-	if(pos.progress() < 0.5){
-		probabilities[0] = probabilities[--n_moves];
-		moves[0] = moves[n_moves];
-	}
-	else{
-		sum += probabilities[0];
-	}
-	for(int i=0;i<n_moves;i++)probabilities[i] /= sum;
+	float p = 1.0f / n_moves;
+	for(int i=0;i<n_moves;i++)probabilities[i] = p;
 	return pos.turn_player() - 1;
 }
 void Searcher::set_random(){

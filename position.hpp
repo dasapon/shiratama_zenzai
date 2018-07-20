@@ -11,6 +11,7 @@ constexpr Intersection resign = 65536;
 class Position{
 	static sheena::Array2d<uint64_t, BoardWidth * BoardWidth, 4> hash_seed;
 	sheena::VInt<BoardDim> stones, liverty_cache;
+	sheena::Array<BitBoard, Sentinel> occupied;
 	uint64_t key;
 	int board_size;
 	Intersection kou;
@@ -38,9 +39,9 @@ public:
 	int result(int komix2)const;
 	void make_move(Intersection i);
 	void clear();
-	int generate_moves(MoveArray& moves, sheena::Array<float, 362>& policy_score)const;
-	int dir4index(Intersection i)const;
-	int diag4index(Intersection i)const;
+	int generate_moves(MoveArray& moves)const;
+	int generate_moves_fast(MoveArray& moves)const;
+	bool is_move_legal(Intersection i)const;
 	float progress()const{
 		return float(n_stone) / (board_size * board_size);
 	}
