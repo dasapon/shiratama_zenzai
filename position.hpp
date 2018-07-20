@@ -9,7 +9,7 @@ constexpr Intersection pass = 0;
 constexpr Intersection resign = 65536;
 
 class Position{
-	static sheena::Array2d<uint64_t, 441, 4> hash_seed;
+	static sheena::Array2d<uint64_t, BoardWidth * BoardWidth, 4> hash_seed;
 	sheena::VInt<BoardDim> stones, liverty_cache;
 	uint64_t key;
 	int board_size;

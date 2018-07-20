@@ -4,7 +4,7 @@
 
 static const sheena::Array<Intersection, 4> dir4({East, West, North, South});
 
-sheena::Array2d<uint64_t, 441, 4> Position::hash_seed;
+sheena::Array2d<uint64_t, BoardWidth * BoardWidth, 4> Position::hash_seed;
 
 void Position::init_hash_seed(){
 	std::mt19937_64 mt(0);

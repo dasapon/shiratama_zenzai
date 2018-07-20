@@ -12,20 +12,20 @@ void generate_records(){
 	//棋譜生成
 	omp_set_num_threads(selfplay_threads);
 #pragma omp parallel for schedule(dynamic)
-	for(int i=0;i<4800;i++){
+	for(int i=0;i<6000;i++){
 		size_t thread_id = omp_get_thread_num();
 		Record record;
 		record.result = 0;
 		State state(searcher[thread_id], 9);
 		sheena::Array<double, 2> result;
-		for(int ply = 0; ply < 81 * 2; ply++){
+		for(int ply = 0; ply < 81; ply++){
 			if(state.terminate(result)){
 				if(result[0] > 0)record.result = 1;
 				else if(result[0] < 0)record.result = -1;
 				break;
 			}
 			//1手打つ
-			searcher[thread_id].search(state, 1000, 500);
+			searcher[thread_id].search(state, 1000, 800);
 			Intersection move = searcher[thread_id].select(state);
 			state.act(move);
 			record.push_back(move);

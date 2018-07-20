@@ -5,6 +5,7 @@
 class Searcher;
 
 class State{
+public:
 	Position pos;
 	sheena::Array<uint64_t, 16> key_history;
 	sheena::Array<Intersection, 2> move_history;
@@ -12,7 +13,6 @@ class State{
 	int game_ply;
 	Stone super_kou;
 	Intersection random_move(std::mt19937& mt)const;
-public:
 	State(Searcher& searcher, int board_size):pos(board_size), searcher(&searcher), game_ply(0), super_kou(Empty){
 		for(int i=0;i<16;i++){
 			key_history[i] = 0;
@@ -46,7 +46,7 @@ public:
 		if(super_kou == Empty && i != pass){
 			for(int i=game_ply % 2;i<key_history.size();i+=2){
 				if(key() == key_history[i]){
-					super_kou = turn();
+					super_kou = opponent(turn());
 					break;
 				}
 			}
@@ -94,17 +94,18 @@ public:
 		sheena::Array<double, 362>rewards;
 		sheena::Array<int, 362> counts;
 		int n_moves = search_result(state, moves, rewards, counts);
-		Intersection ret = resign;
+		Intersection ret = pass;
 		int max_count = 0;
+		double max_reward = -2;
 		for(int i=0;i<n_moves;i++){
 			std::cerr << intersection2string(moves[i]) << "," << rewards[i] << "," << counts[i] << std::endl;
-			if(rewards[i] > -0.8){
-				if(max_count < counts[i]){
-					ret = moves[i];
-					max_count = counts[i];
-				}
+			max_reward = std::max(max_reward, rewards[i]);
+			if(max_count < counts[i]){
+				ret = moves[i];
+				max_count = counts[i];
 			}
 		}
+		if(max_reward <= -0.8)ret = resign;
 		return ret;
 	}
 	Intersection select(const State& state){

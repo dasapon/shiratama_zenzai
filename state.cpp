@@ -52,14 +52,7 @@ void State::playout(sheena::Array<double, 2>& result, size_t thread_id){
 }
 
 int State::get_actions(int& n_moves, MoveArray& moves, sheena::Array<float, 362>& probabilities, size_t thread_id)const{
-	//連続パス,または同型反復による終局判定
-	if((move_history[0] == pass
-	&& move_history[1] == pass)
-	|| super_kou != Empty){
-		n_moves = 0;
-		return pos.turn_player() - 1;
-	}
-	//非合法手
+	//合法手生成
 	n_moves = pos.generate_moves(moves, probabilities);
 	float sum = 0;
 	for(int i=0;i<n_moves;i++)sum += probabilities[i];

@@ -127,6 +127,7 @@ static void init_responses(std::map<std::string, std::function<void(const std::v
 			std::cerr << " " << intersection2string(moves[i]);
 		}
 		std::cerr << std::endl;
+		std::cerr << "super_kou " << state.super_kou << std::endl;;
 	};
 	responses["genmove"] = [&](const std::vector<std::string>& args){
 		//手番

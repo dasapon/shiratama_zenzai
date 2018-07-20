@@ -3,6 +3,13 @@
 #include "position.hpp"
 
 static sheena::Array2d<int, MaxBoardSize + 1, BoardDim> edge_distance_max3;
+//relation
+//25
+//146
+//0345
+//X012
+
+static sheena::Array2d<int, BoardDim, BoardDim> relation_table;
 
 using PolicyWeight = sheena::Array2d<float, 4, dir4dim>;
 static PolicyWeight policy_weight;
@@ -19,6 +26,19 @@ void init_policy(){
 				int distance = std::min(std::min(y - 1, board_size - y), std::min(x - 1, board_size - x));
 				edge_distance_max3[board_size][intersection(x, y)] = std::min(3, distance);
 			}
+		}
+	}
+	//2点間の関係
+	for(Intersection i = 0; i < BoardDim; i++){
+		for(Intersection j = 0; j < BoardDim; j++){
+			int dx = std::abs(i % BoardWidth - j % BoardWidth);
+			int dy = std::abs(i / BoardWidth - j / BoardWidth);
+			int min = std::min(dx, dy);
+			int max = std::max(dx, dy);
+			if(max > 3 || min >= 3)relation_table[i][j] = 7;
+			else if(min == 0)relation_table[i][j] = max - 1;
+			else if(min == 1)relation_table[i][j] = max + 2;
+			else if(min == 2)relation_table[i][j] = max + 4;
 		}
 	}
 	//policyの重みの読み込み
