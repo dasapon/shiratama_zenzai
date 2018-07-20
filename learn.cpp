@@ -11,8 +11,8 @@ void generate_records(){
 	}
 	//棋譜生成
 	omp_set_num_threads(selfplay_threads);
-#pragma omp parallel for
-	for(int i=0;i<2400;i++){
+#pragma omp parallel for schedule(dynamic)
+	for(int i=0;i<4800;i++){
 		size_t thread_id = omp_get_thread_num();
 		Record record;
 		record.result = 0;

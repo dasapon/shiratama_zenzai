@@ -97,6 +97,7 @@ int Position::result_sub(Intersection i, BitBoard& done, Stone& color)const {
 	done |= i;
 	int ret = 1;
 	for(Intersection dir : dir4){
+		if(stones[i + dir] == Sentinel)continue;
 		color = static_cast<Stone>(color | stones[i + dir]);
 		if(stones[i + dir] == Empty){
 			if(!done[i + dir]){
