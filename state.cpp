@@ -8,8 +8,7 @@ Intersection State::random_move(std::mt19937& mt)const{
 	//他の合法手があればパスは選択しない
 	//パス以外の合法手しか無いならばパスをする
 	while(n_moves){
-		std::uniform_int_distribution<int> dist(0, n_moves - 1);
-		int idx = dist(mt);
+		int idx = mt() % n_moves;
 		Intersection move = moves[idx];
 		if(pos.is_move_legal(move))return move;
 		else moves[idx] = moves[--n_moves];
@@ -44,7 +43,7 @@ void State::playout(sheena::Array<double, 2>& result, size_t thread_id){
 	result[0] = result[1] = 0;
 }
 
-int State::get_actions(int& n_moves, MoveArray& moves, sheena::Array<float, 362>& probabilities, size_t thread_id)const{
+int State::get_actions(int& n_moves, MoveArray& moves, sheena::Array<float, MaxLegalMove>& probabilities, size_t thread_id)const{
 	//合法手生成
 	n_moves = pos.generate_moves(moves);
 	//進行度が0.5以上ならパスを追加

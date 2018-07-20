@@ -3,7 +3,7 @@
 #include "shiratama_zenzai.hpp"
 #include "bitboard.hpp"
 
-using MoveArray = sheena::Array<Intersection, 362>;
+using MoveArray = sheena::Array<Intersection, MaxLegalMove>;
 
 constexpr Intersection pass = 0;
 constexpr Intersection resign = 65536;

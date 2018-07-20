@@ -60,7 +60,7 @@ public:
 		return pos.turn_player();
 	}
 	void playout(sheena::Array<double, 2>&, size_t thread_id);
-	int get_actions(int&, sheena::Array<Intersection, 362>&, sheena::Array<float, 362>&, size_t thread_id)const;
+	int get_actions(int&, MoveArray&, sheena::Array<float, MaxLegalMove>&, size_t thread_id)const;
 	bool is_move_legal(Stone turn, Intersection i){
 		return true;//ひとまず, GUIから送られる手は全て合法手であるとしておく。
 		/*if(turn != pos.turn_player())return false;
@@ -73,7 +73,7 @@ public:
 	}
 };
 constexpr size_t max_threads = 16;
-class Searcher : public sheena::mcts::Searcher<sheena::mcts::UCB1, State, Intersection, 2, 362>{
+class Searcher : public sheena::mcts::Searcher<sheena::mcts::UCB1, State, Intersection, 2, MaxLegalMove>{
 	friend class State;
 	int komix2;
 	sheena::Array<std::mt19937, max_threads> mt;
@@ -91,8 +91,8 @@ public:
 	template<bool print>
 	Intersection bestmove(const State& state){
 		MoveArray moves;
-		sheena::Array<double, 362>rewards;
-		sheena::Array<int, 362> counts;
+		sheena::Array<double, MaxLegalMove>rewards;
+		sheena::Array<int, MaxLegalMove> counts;
 		int n_moves = search_result(state, moves, rewards, counts);
 		Intersection ret = pass;
 		int max_count = 0;
@@ -110,8 +110,8 @@ public:
 	}
 	Intersection select(const State& state, int threshold){
 		MoveArray moves;
-		sheena::Array<double, 362>rewards;
-		sheena::Array<int, 362> counts;
+		sheena::Array<double, MaxLegalMove>rewards;
+		sheena::Array<int, MaxLegalMove> counts;
 		int n_moves = search_result(state, moves, rewards, counts);
 		int count_sum = 0;
 		for(int i=0;i<n_moves;i++){

@@ -27,6 +27,7 @@ inline Stone opponent(Stone stone){
 constexpr int BoardWidth = 20;
 constexpr int MaxBoardSize = 19;
 constexpr int BoardDim = 64 * 8;
+constexpr int MaxLegalMove = MaxBoardSize * MaxBoardSize + 1;
 using Intersection = int;
 
 enum{
