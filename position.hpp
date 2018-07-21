@@ -2,6 +2,7 @@
 
 #include "shiratama_zenzai.hpp"
 #include "bitboard.hpp"
+#include "montecarlo_owner.hpp"
 
 using MoveArray = sheena::Array<Intersection, MaxLegalMove>;
 
@@ -36,12 +37,15 @@ public:
 	//void operator=(const Board& rhs);
 	static void init_hash_seed();
 	//黒勝ちなら1, 白勝ちなら-1, 引き分けなら0を返す関数(簡易実装)
-	int result(int komix2)const;
+	int result(int komix2, MonteCarloOwner& mc_owner)const;
 	void make_move(Intersection i);
 	void clear();
 	int generate_moves(MoveArray& moves)const;
 	int generate_moves_fast(MoveArray& moves)const;
 	bool is_move_legal(Intersection i)const;
+	bool is_empty(Intersection i)const{
+		return occupied[Empty][i];
+	}
 	float progress()const{
 		return float(n_stone) / (board_size * board_size);
 	}

@@ -120,7 +120,7 @@ int Position::result_sub(Intersection i, BitBoard& done, Stone& color)const {
 	return ret;
 }
 
-int Position::result(int komix2)const{
+int Position::result(int komix2, MonteCarloOwner& mc_owner)const{
 	int territory_diff = 0;
 	BitBoard counted_empties;
 	counted_empties.clear();
@@ -132,24 +132,36 @@ int Position::result(int komix2)const{
 			case Empty:
 				if(!counted_empties[i]){
 					Stone surround = Empty;
+					BitBoard bb(counted_empties);
 					int n = result_sub(i, counted_empties, surround);
+					int sign = 0;
 					switch(surround){
 					case Black:
 						territory_diff += n;
+						sign = 1;
 						break;
 					case White:
 						territory_diff -= n;
+						sign = -1;
 						break;
 					default:
 						break;
+					}
+					if(sign){
+						bb = counted_empties & ~bb;
+						bb.for_each([&](Intersection i){
+							mc_owner.update(i, sign);
+						});
 					}
 				}
 				break;
 			case Black:
 				territory_diff++;
+				mc_owner.update(i, 1);
 				break;
 			case White:
 				territory_diff--;
+				mc_owner.update(i, -1);
 				break;
 			default:
 				assert(false);

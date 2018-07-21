@@ -105,11 +105,11 @@ static void init_responses(std::map<std::string, std::function<void(const std::v
 					break;
 				}
 			}
-			if(color != state.turn())state.act(pass);
+			if(color != state.turn())state.act(pass, 0);
 			Intersection i = string2intersection(args[2]);
 			bool legal = state.is_move_legal(color, i);
 			if(legal){
-				state.act(i);
+				state.act(i, 0);
 				send("");
 			}
 			else{
@@ -138,33 +138,26 @@ static void init_responses(std::map<std::string, std::function<void(const std::v
 				break;
 			}
 		}
-		if(color != state.turn())state.act(pass);
+		if(color != state.turn())state.act(pass, 0);
 		sheena::Stopwatch stopwatch;
-		if(state.progress() == 0){
-			//定跡(のつもり)
-			send("D5");
-			state.act(string2intersection("D5"));
+		std::cerr << "search start " << state.progress() << std::endl;
+		int sec = state.progress() < 0.30 ? 30 : 5;
+		//探索
+		searcher.search(state, sec * 1000, 50000);
+		std::cerr << "time " << stopwatch.msec() <<"[msec]" << std::endl;
+		Intersection bestmove = searcher.bestmove<true>(state);
+		if(bestmove != resign){
+			state.act(bestmove, 0);
 		}
-		else{
-			std::cerr << "search start " << state.progress() << std::endl;
-			int sec = state.progress() < 0.30 ? 30 : 5;
-			//探索
-			searcher.search(state, sec * 1000, 1500000);
-			std::cerr << "time " << stopwatch.msec() <<"[msec]" << std::endl;
-			Intersection bestmove = searcher.bestmove<true>(state);
-			if(bestmove != resign){
-				state.act(bestmove);
-			}
-			send(intersection2string(bestmove));
-		}
+		send(intersection2string(bestmove));
 	};
 }
 void gtp(){
 	Searcher searcher;
 	searcher.set_random();
 	searcher.resize_tt(256);
-	searcher.set_expansion_threshold(10);
-	searcher.set_threads(4);
+	searcher.set_expansion_threshold(0);
+	searcher.set_threads(1);
 	searcher.set_virtual_loss(5, -1);
 	State state(searcher, 19);
 	std::map<std::string, std::function<void(const std::vector<std::string>& args)>> responses;

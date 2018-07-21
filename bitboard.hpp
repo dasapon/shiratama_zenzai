@@ -29,8 +29,10 @@ public:
 	void operator&=(const BitBoard& rhs){
 		for(int i=0;i<bb.size();i++)bb[i] &= rhs.bb[i];
 	}
-	void andeqnot(const BitBoard& rhs){
-		for(int i=0;i<bb.size();i++)bb[i] &= ~rhs.bb[i];
+	BitBoard operator&(const BitBoard rhs){
+		BitBoard ret;
+		for(int i=0;i<bb.size();i++)ret.bb[i] = bb[i] & rhs.bb[i];
+		return ret;
 	}
 	void operator=(const BitBoard& rhs){
 		for(int i=0;i<bb.size();i++)bb[i] = rhs.bb[i];

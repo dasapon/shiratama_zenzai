@@ -1,6 +1,7 @@
 #pragma once
 
 #include "position.hpp"
+#include "lgrf.hpp"
 
 class Searcher;
 
@@ -28,7 +29,7 @@ public:
 		game_ply = rhs.game_ply;
 		super_kou = rhs.super_kou;
 	}
-	bool terminate(sheena::Array<double, 2>& reward)const;
+	bool terminate(sheena::Array<double, 2>& reward, size_t thread_id)const;
 	void clear(){
 		pos.clear();
 		game_ply = 0;
@@ -38,7 +39,7 @@ public:
 		}
 		move_history[0] = move_history[1] = -1;
 	}
-	void act(Intersection i){
+	void act(Intersection i, size_t thread_id){
 		pos.make_move(i);
 		game_ply++;
 		move_history[game_ply % 2] = i;
@@ -80,10 +81,14 @@ class Searcher : public sheena::mcts::Searcher<sheena::mcts::UCB1, State, Inters
 	friend class State;
 	int komix2;
 	sheena::Array<std::mt19937, max_threads> mt;
+	sheena::Array<MonteCarloOwner, max_threads> mc_owner;
+	sheena::Array<LGRF, max_threads> lgrf;
 public:
 	Searcher():komix2(0){
 		int i = 0;
 		for(auto& rand : mt){
+			lgrf[i].clear();
+			mc_owner[i].init();
 			rand.seed(i++);
 		}
 	}
