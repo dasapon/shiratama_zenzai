@@ -142,8 +142,8 @@ static void init_responses(std::map<std::string, std::function<void(const std::v
 		sheena::Stopwatch stopwatch;
 		if(state.progress() == 0){
 			//定跡(のつもり)
-			send("E5");
-			state.act(string2intersection("E5"));
+			send("D5");
+			state.act(string2intersection("D5"));
 		}
 		else{
 			std::cerr << "search start " << state.progress() << std::endl;
