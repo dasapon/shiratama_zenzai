@@ -71,6 +71,9 @@ public:
 		}
 		return false;*/
 	}
+	float progress()const{
+		return pos.progress();
+	}
 };
 constexpr size_t max_threads = 16;
 class Searcher : public sheena::mcts::Searcher<sheena::mcts::UCB1, State, Intersection, 2, MaxLegalMove>{

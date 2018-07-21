@@ -140,15 +140,22 @@ static void init_responses(std::map<std::string, std::function<void(const std::v
 		}
 		if(color != state.turn())state.act(pass);
 		sheena::Stopwatch stopwatch;
-		std::cerr << "search start" << std::endl;
-		//探索
-		searcher.search(state, 15 * 0000, 1000000);
-		std::cerr << "time " << stopwatch.msec() <<"[msec]" << std::endl;
-		Intersection bestmove = searcher.bestmove<true>(state);
-		if(bestmove != resign){
-			state.act(bestmove);
+		if(state.progress() == 0){
+			//定跡(のつもり)
+			send("E5");
+			state.act(string2intersection("E5"));
 		}
-		send(intersection2string(bestmove));
+		else{
+			std::cerr << "search start " << state.progress() << std::endl;
+			//探索
+			searcher.search(state, 21 * (1 - state.progress() + 0.1) * 1000, 1000000);
+			std::cerr << "time " << stopwatch.msec() <<"[msec]" << std::endl;
+			Intersection bestmove = searcher.bestmove<true>(state);
+			if(bestmove != resign){
+				state.act(bestmove);
+			}
+			send(intersection2string(bestmove));
+		}
 	};
 }
 void gtp(){
