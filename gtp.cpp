@@ -147,8 +147,9 @@ static void init_responses(std::map<std::string, std::function<void(const std::v
 		}
 		else{
 			std::cerr << "search start " << state.progress() << std::endl;
+			int sec = state.progress() < 0.30 ? 30 : 5;
 			//探索
-			searcher.search(state, 21 * (1 - state.progress() + 0.1) * 1000, 1000000);
+			searcher.search(state, sec * 1000, 1500000);
 			std::cerr << "time " << stopwatch.msec() <<"[msec]" << std::endl;
 			Intersection bestmove = searcher.bestmove<true>(state);
 			if(bestmove != resign){
