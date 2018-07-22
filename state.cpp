@@ -47,7 +47,7 @@ void State::playout(sheena::Array<double, 2>& result, size_t thread_id){
 		}
 		//LGRF
 		Intersection i = searcher->lgrf[thread_id].probe(turn(), last);
-		if(i == pass || !pos.is_empty(i) || !is_move_legal(turn(), i)){
+		if(i == pass || !pos.is_empty(i) || !pos.is_move_legal(i)){
 			i = random_move(searcher->mt[thread_id]);
 		} 
 		history[ply + 1] = i;

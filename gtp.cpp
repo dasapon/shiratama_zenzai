@@ -107,7 +107,7 @@ static void init_responses(std::map<std::string, std::function<void(const std::v
 			}
 			if(color != state.turn())state.act(pass, 0);
 			Intersection i = string2intersection(args[2]);
-			bool legal = state.is_move_legal(color, i);
+			bool legal = state.is_move_legal(i);
 			if(legal){
 				state.act(i, 0);
 				send("");
@@ -141,16 +141,23 @@ static void init_responses(std::map<std::string, std::function<void(const std::v
 		if(color != state.turn())state.act(pass, 0);
 		sheena::Stopwatch stopwatch;
 		bool sended = false;
+		//日本ルール対応(一応)
+		if(state.progress() >= 0.5 && state.lastmove() == pass){
+			send(intersection2string(pass));
+			state.act(pass, 0);
+			sended = true;
+		}
 		auto book = [&](std::string move){
 			if(sended)return;
 			Intersection i = string2intersection(move);
-			if(state.is_empty(i)){
+			if(state.is_move_legal(i)){
 				state.act(i, 0);
 				send(move);
 				sended = true;
 			}
 			return;
 		};
+
 		book("G7");
 		book("G13");
 		book("N7");
@@ -161,9 +168,9 @@ static void init_responses(std::map<std::string, std::function<void(const std::v
 		&& state.is_empty(string2intersection("R16")))book("R17");
 		if(sended)return;
 		std::cerr << "search start " << std::endl;
-		int sec = 10;
+		int sec = 20;
 		//探索
-		searcher.search(state, sec * 1000, 60000);
+		searcher.search(state, sec * 1000, 200000);
 		std::cerr << "time " << stopwatch.msec() <<"[msec]" << std::endl;
 		Intersection bestmove = searcher.bestmove<true>(state);
 		if(bestmove != resign){

@@ -60,17 +60,13 @@ public:
 	Stone turn()const{
 		return pos.turn_player();
 	}
+	Intersection lastmove()const{
+		return move_history[game_ply % 2];
+	}
 	void playout(sheena::Array<double, 2>&, size_t thread_id);
 	int get_actions(int&, MoveArray&, sheena::Array<float, MaxLegalMove>&, size_t thread_id)const;
-	bool is_move_legal(Stone turn, Intersection i){
-		return true;//ひとまず, GUIから送られる手は全て合法手であるとしておく。
-		/*if(turn != pos.turn_player())return false;
-		MoveArray moves;
-		int n = pos.generate_moves(moves);
-		for(int i=0;i<n;i++){
-			if(moves[i] == i)return true;
-		}
-		return false;*/
+	bool is_move_legal(Intersection i){
+		return pos.is_empty(i) && pos.is_move_legal(i);
 	}
 	float progress()const{
 		return pos.progress();
