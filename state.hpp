@@ -20,6 +20,9 @@ public:
 		}
 		move_history[0] = move_history[1] = -1;
 	}
+	int board_size()const{
+		return pos.get_board_size();
+	}
 	State(const State& state):pos(state.pos), key_history(state.key_history), move_history(state.move_history), searcher(state.searcher), game_ply(state.game_ply), super_kou(state.super_kou){}
 	void operator=(const State& rhs){
 		pos = rhs.pos;
