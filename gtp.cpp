@@ -140,10 +140,30 @@ static void init_responses(std::map<std::string, std::function<void(const std::v
 		}
 		if(color != state.turn())state.act(pass, 0);
 		sheena::Stopwatch stopwatch;
-		std::cerr << "search start " << state.progress() << std::endl;
-		int sec = state.progress() < 0.30 ? 30 : 5;
+		bool sended = false;
+		auto book = [&](std::string move){
+			if(sended)return;
+			Intersection i = string2intersection(move);
+			if(state.is_empty(i)){
+				state.act(i, 0);
+				send(move);
+				sended = true;
+			}
+			return;
+		};
+		book("G7");
+		book("G13");
+		book("N7");
+		book("N13");
+		if(state.is_empty(string2intersection("D3"))
+		&& state.is_empty(string2intersection("C4")))book("C3");
+		if(state.is_empty(string2intersection("Q17"))
+		&& state.is_empty(string2intersection("R16")))book("R17");
+		if(sended)return;
+		std::cerr << "search start " << std::endl;
+		int sec = 10;
 		//探索
-		searcher.search(state, sec * 1000, 50000);
+		searcher.search(state, sec * 1000, 60000);
 		std::cerr << "time " << stopwatch.msec() <<"[msec]" << std::endl;
 		Intersection bestmove = searcher.bestmove<true>(state);
 		if(bestmove != resign){
@@ -157,7 +177,7 @@ void gtp(){
 	searcher.set_random();
 	searcher.resize_tt(256);
 	searcher.set_expansion_threshold(0);
-	searcher.set_threads(1);
+	searcher.set_threads(8);
 	searcher.set_virtual_loss(5, -1);
 	State state(searcher, 19);
 	std::map<std::string, std::function<void(const std::vector<std::string>& args)>> responses;

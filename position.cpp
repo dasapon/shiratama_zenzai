@@ -244,6 +244,12 @@ void Position::make_move(Intersection i){
 int Position::generate_moves(MoveArray& moves)const{
 	int ret = 0;
 	occupied[Empty].for_each([&](Intersection i){
+		//序盤であれば、1線、2線に打たない
+		if(board_size == 19 && n_stone < 20){
+			int x = i % BoardWidth;
+			int y = i / BoardWidth;
+			if(x <= 2 || x >= 18 || y <= 2 || y >= 18)return;
+		}
 		bool invalid = false;
 		int dir4pattern = 0;
 		//合法手である条件

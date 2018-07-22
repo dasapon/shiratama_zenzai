@@ -13,6 +13,7 @@ public:
 	void update(Stone start_turn, int result, const sheena::Array<Intersection, BoardDim>& moves, int ply){
 		if(result == 0)return;
 		int start = start_turn == Black ? 0 : 1;
+		ply = std::min(ply, 32);
 		//黒勝ち
 		if(result > 0){
 			for(int i=0;i < ply; i+=2){

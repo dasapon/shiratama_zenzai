@@ -75,6 +75,9 @@ public:
 	float progress()const{
 		return pos.progress();
 	}
+	bool is_empty(Intersection i)const{
+		return pos.is_empty(i);
+	}
 };
 constexpr size_t max_threads = 16;
 class Searcher : public sheena::mcts::Searcher<sheena::mcts::UCB1, State, Intersection, 2, MaxLegalMove>{
@@ -84,6 +87,7 @@ class Searcher : public sheena::mcts::Searcher<sheena::mcts::UCB1, State, Inters
 	sheena::Array<MonteCarloOwner, max_threads> mc_owner;
 	sheena::Array<LGRF, max_threads> lgrf;
 public:
+	
 	Searcher():komix2(0){
 		int i = 0;
 		for(auto& rand : mt){
@@ -106,7 +110,7 @@ public:
 		int max_count = 0;
 		double max_reward = -2;
 		for(int i=0;i<n_moves;i++){
-			if(print)std::cerr << intersection2string(moves[i]) << "," << rewards[i] << "," << counts[i] << std::endl;
+			if(print && counts[i] >= 500)std::cerr << intersection2string(moves[i]) << "," << rewards[i] << "," << counts[i] << std::endl;
 			max_reward = std::max(max_reward, rewards[i]);
 			if(max_count < counts[i]){
 				ret = moves[i];
