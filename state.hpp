@@ -1,7 +1,6 @@
 #pragma once
 
 #include "position.hpp"
-#include "lgrf.hpp"
 
 class Searcher;
 
@@ -84,13 +83,11 @@ class Searcher : public sheena::mcts::Searcher<sheena::mcts::UCB1, State, Inters
 	int komix2;
 	sheena::Array<std::mt19937, max_threads> mt;
 	sheena::Array<MonteCarloOwner, max_threads> mc_owner;
-	sheena::Array<LGRF, max_threads> lgrf;
 public:
 	
 	Searcher():komix2(0){
 		int i = 0;
 		for(auto& rand : mt){
-			lgrf[i].clear();
 			mc_owner[i].init();
 			rand.seed(i++);
 		}

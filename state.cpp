@@ -38,18 +38,12 @@ void State::playout(sheena::Array<double, 2>& result, size_t thread_id){
 	Intersection last = move_history[game_ply % 2];
 	if(last < 0)last = pass;
 	history[0] = last;
-	Stone start_player = turn();
 	for(int ply = 0; ply < limit; ply++){
 		if(terminate(result, thread_id)){
-			int r = result[0] > 0? 1 : (result[0] == 0? 0 : -1);
-			searcher->lgrf[thread_id].update(start_player, r, history, ply);
 			return;
 		}
 		//LGRF
-		Intersection i = searcher->lgrf[thread_id].probe(turn(), last);
-		if(i == pass || !pos.is_empty(i) || !pos.is_move_legal(i)){
-			i = random_move(searcher->mt[thread_id]);
-		} 
+		Intersection i = random_move(searcher->mt[thread_id]);
 		history[ply + 1] = i;
 		last = i;
 		act(i, thread_id);
