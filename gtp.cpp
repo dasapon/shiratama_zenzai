@@ -107,14 +107,8 @@ static void init_responses(std::map<std::string, std::function<void(const std::v
 			}
 			if(color != state.turn())state.act(pass, 0);
 			Intersection i = string2intersection(args[2]);
-			bool legal = state.is_move_legal(i);
-			if(legal){
-				state.act(i, 0);
-				send("");
-			}
-			else{
-				error("illegal move'");
-			}
+			state.act(i, 0);
+			send("");
 		}
 	};
 	responses["show"] = [&](const std::vector<std::string>& args){
@@ -141,9 +135,8 @@ static void init_responses(std::map<std::string, std::function<void(const std::v
 		if(color != state.turn())state.act(pass, 0);
 		sheena::Stopwatch stopwatch;
 		std::cerr << "search start " << std::endl;
-		int sec = 10;
 		//探索
-		searcher.search(state, sec * 1000, 200000);
+		searcher.search(state, 10 * 1000, 30000);
 		std::cerr << "time " << stopwatch.msec() <<"[msec]" << std::endl;
 		Intersection bestmove = searcher.bestmove<true>(state);
 		if(bestmove != resign){
@@ -155,9 +148,9 @@ static void init_responses(std::map<std::string, std::function<void(const std::v
 void gtp(){
 	Searcher searcher;
 	searcher.set_random();
-	searcher.resize_tt(1024);
-	searcher.set_expansion_threshold(0);
-	searcher.set_threads(4);
+	searcher.resize_tt(256);
+	searcher.set_expansion_threshold(10);
+	searcher.set_threads(1);
 	searcher.set_virtual_loss(5, -1);
 	State state(searcher, 19);
 	std::map<std::string, std::function<void(const std::vector<std::string>& args)>> responses;

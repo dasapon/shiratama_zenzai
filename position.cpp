@@ -1,7 +1,9 @@
 #include "position.hpp"
+#include "policy.hpp"
 #include "dir4pattern.hpp"
 
 static const sheena::Array<Intersection, 4> dir4({East, West, North, South});
+static const sheena::Array<Intersection, 4> diag4({SE, SW, NE, NW});
 
 sheena::Array2d<uint64_t, BoardWidth * BoardWidth, 4> Position::hash_seed;
 
@@ -15,15 +17,10 @@ void Position::init_hash_seed(){
 }
 
 Position::Position(int board_size): stones(Sentinel), key(0), board_size(board_size), kou(0), turn(Black), n_stone(0){
-	occupied[Empty].clear();
-	occupied[Black].clear();
-	occupied[White].clear();
 	liverty_cache.clear();
 	for(int y = 1; y<=board_size;y++){
 		for(int x = 1; x<= board_size;x++){
-			Intersection i = intersection(x, y);
-			stones[i] = Empty;
-			occupied[Empty] ^= i;
+			stones[intersection(x, y)] = Empty;
 		}
 	}
 }
@@ -34,7 +31,6 @@ Position::Position(const Position& pos){
 
 void Position::operator=(const Position& rhs){
 	stones = rhs.stones;
-	occupied = rhs.occupied;
 	key = rhs.key;
 	board_size = rhs.board_size;
 	kou = rhs.kou;
@@ -46,15 +42,11 @@ void Position::operator=(const Position& rhs){
 void Position::put(Stone color, Intersection i){
 	stones[i] = color;
 	key ^= hash_seed[i][color];
-	occupied[Empty] ^= i;
-	occupied[color] ^= i;
 	n_stone++;
 }
 void Position::remove(Stone color, Intersection i){
 	stones[i] = Empty;
 	key ^= hash_seed[i][color];
-	occupied[Empty] ^= i;
-	occupied[color] ^= i;
 	n_stone--;
 }
 int Position::remove_string(Stone color, Intersection i, BitBoard& liverty_changed){
@@ -241,9 +233,13 @@ void Position::make_move(Intersection i){
 	key ^= 1;
 }
 
-int Position::generate_moves(MoveArray& moves)const{
+int Position::generate_moves(MoveArray& moves, sheena::Array<float, 362>& policy_score)const{
 	int ret = 0;
-	occupied[Empty].for_each([&](Intersection i){
+	moves[ret] = pass;
+	policy_score[ret++] = 0.01f;
+	for(int y = 1; y <= board_size; y++){ for(int x = 1; x <= board_size; x++){
+		Intersection i = intersection(x, y);
+		if(stones[i] != Empty)continue;
 		bool invalid = false;
 		int dir4pattern = 0;
 		//合法手である条件
@@ -260,29 +256,39 @@ int Position::generate_moves(MoveArray& moves)const{
 			dir4pattern = update_pattern(turn, dir4pattern, static_cast<Stone>(stones[neighbor]), liverty_cache[neighbor]);
 		}
 		if(!invalid && is_legal.test(dir4pattern)){
-			moves[ret++] = i;
+			moves[ret] = i;
+			policy_score[ret++] = pattern_policy(board_size, i, diag4index(i), dir4pattern);
 		}
-	});
+	}}
 	return ret;
 }
 
-int Position::generate_moves_fast(MoveArray& moves)const{
+int Position::dir4index(Intersection i)const{
 	int ret = 0;
-	BitBoard kou_inv = intersection_bb[kou];
-	occupied[Empty].for_each([&](Intersection i){
-		moves[ret++] = i;
-	});
-	return ret;
-}
-
-//合法手判定
-//ただし、iは空であることは保証されているとする
-bool Position::is_move_legal(Intersection i)const{
-	int dir4index = 0;
 	for(Intersection dir : dir4){
 		Intersection neighbor = i + dir;
-		if(neighbor == kou)return false;
-		dir4index = update_pattern(turn, dir4index, static_cast<Stone>(stones[neighbor]), liverty_cache[neighbor]);
+		ret = update_pattern(turn, ret, static_cast<Stone>(stones[neighbor]), liverty_cache[neighbor]);
 	}
-	return is_legal.test(dir4index);
+	return ret;
+}
+
+int Position::diag4index(Intersection i)const{
+	int ret = 0;
+	for(Intersection dir : diag4){
+		ret *= 3;
+		Intersection neighbor = i + dir;
+		switch(stones[neighbor]){
+		case Black:
+		case White:
+			if(turn == stones[neighbor]){
+				ret += 1;
+			}
+			else{
+				ret += 2;
+			}
+		default:
+			break;
+		}
+	}
+	return ret;
 }

@@ -67,14 +67,8 @@ public:
 	}
 	void playout(sheena::Array<double, 2>&, size_t thread_id);
 	int get_actions(int&, MoveArray&, sheena::Array<float, MaxLegalMove>&, size_t thread_id)const;
-	bool is_move_legal(Intersection i){
-		return pos.is_empty(i) && pos.is_move_legal(i);
-	}
 	float progress()const{
 		return pos.progress();
-	}
-	bool is_empty(Intersection i)const{
-		return pos.is_empty(i);
 	}
 };
 constexpr size_t max_threads = 16;
